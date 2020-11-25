@@ -23,7 +23,6 @@ public class MinecraftServer
     implements ICommandListener, Runnable
 {
 
-
     public MinecraftServer()
     {
 
@@ -610,7 +609,7 @@ public class MinecraftServer
             if(command.toLowerCase().startsWith("seed")){
                 WorldGenParams params = new WorldGenParams();
                 icommandlistener.log("Seed for this world is:"+ params.GetSeedFromPropertiesFile());
-            }
+            } else
             if(command.toLowerCase().startsWith("whitelist ") && GameruleManager.getBooleanGamerule("preview_keepinventorysystem", false)){
                 String[] args =  command.toLowerCase().split(" ");
                 if(args[1] == "add"){
@@ -625,16 +624,16 @@ public class MinecraftServer
                 if(args[1] == "off"){
                     GameruleManager.setBooleanGamerule("usewhitelist", false);
                 }
-            }
+            } else
             if(command.toLowerCase().startsWith("advancement ")){
                 String[] args = command.split(" ");
                 grantAdvancement(username, args[1]);
-            }
+            } else
             if(command.toLowerCase().startsWith("stats ")){
                 String[] args = command.split(" ");
                PlayerStatsManager statsManager = new PlayerStatsManager();
                statsManager.updateStat(username, args[1], args[2]);
-            }
+            } else
             if(command.toLowerCase().startsWith("nether") && GameruleManager.getBooleanGamerule("preview_nether_netherteleportcommand", false)){
                 EntityPlayerMP player = configManager.getPlayerEntity(username);
                 logger.info("[Debug] Attempting to send player "+ player.username +" to the nether. Safe Travels!");
@@ -644,15 +643,15 @@ public class MinecraftServer
                 player.worldObj = netherWorld;
                 netherWorld.entityJoinedWorld(player);
 
-            }
+            } else
             if(command.toLowerCase().startsWith("version")){
                 //WorldGenParams params = new WorldGenParams();
                 icommandlistener.log(VERSION_STRING+" Branch: "+BRANCH);
-            }
+            } else
             if(command.toLowerCase().startsWith("heal")){
              EntityPlayer player =  configManager.getPlayerEntity(username);
              player.heal(20);
-            }
+            } else
             if(command.toLowerCase().startsWith("kill")){
              //   if(s.toLowerCase().startsWith("heal")){
                     EntityPlayer player =  configManager.getPlayerEntity(username);
@@ -660,7 +659,7 @@ public class MinecraftServer
                     player.lastDamagingEntity = configManager.getPlayerEntity(username);
                     player.exposedTakeDamage(40);
 
-            }
+            } else
             if(command.toLowerCase().startsWith("killall")){
                 //   if(s.toLowerCase().startsWith("heal")){
                 for(int i = 0; i < overworld.EntityList.size(); i++){
@@ -668,20 +667,20 @@ public class MinecraftServer
                     if(entity != null){entity.setEntityDead();} //Just in case  something wacky  happens
                 }
 
-            }
+            } else
             if(command.toLowerCase().startsWith("clear")){
                 //   if(s.toLowerCase().startsWith("heal")){
                 EntityPlayer player =  configManager.getPlayerEntity(username);
                 player.inventory.dropAllItems();
 
-            }
+            } else
             if(command.toLowerCase().startsWith("keepinvadd ")){
                 String commandparts[] = command.split(" ");
                 String keepinvlist = GameruleManager.getStringGamerule("keepinvlist", "");
                 keepinvlist += "|"; //Pipe is seperator. Actual string would look something like Redbunny1|Redbunny2
                 keepinvlist += commandparts[1];
                 GameruleManager.setStringGamerule("keepinvlist", keepinvlist);
-            }
+            } else
             if(command.toLowerCase().startsWith("gamerule ")){
               //  GameruleManager gameruleManager = new GameruleManager(new File("server.gamerules"));
                 String commandparts[] = command.toLowerCase().split(" ");
@@ -729,7 +728,7 @@ public class MinecraftServer
                         else if (commandparts[2] == "false"){GameruleManager.setBooleanGamerule("freezetime", false);}
                         break;
                 }
-            }
+            } else
             if(command.toLowerCase().startsWith("timeset ")){
                 String targetTime = command.substring(command.indexOf(" ")).trim();
                 if(targetTime.equals("day")){
@@ -742,7 +741,52 @@ public class MinecraftServer
                    int time =   Integer.parseInt(targetTime);
                    overworld.worldTime = time;
                 }
-            }
+            } else
+                //PlayerControlPart
+                if(command.toLowerCase().startsWith("whois"))
+                {
+                    String playerName = command.split(" ")[1];
+                    String[] toRender = playerControlHandler.getPlayerInfo(playerName);
+                    for(int i = 0; i < toRender.length; i++)
+                    {
+                        icommandlistener.log(toRender[i]);
+                    }
+                } else
+                if(command.toLowerCase().startsWith("invsee"))
+                {
+                    String playerName = command.split(" ")[1];
+                    String[] toRender = playerControlHandler.getBPIL(playerName);
+                    for(int i = 0; i < toRender.length; i++)
+                    {
+                        icommandlistener.log(toRender[i]);
+                    }
+                } else
+                if(command.toLowerCase().startsWith("slotedit"))
+                {
+                    String[] args = command.split(" ");
+
+                    if(!(args.length == 6))
+                    {
+                        icommandlistener.log("Not enough arguments!");
+                        return;
+                    }
+                    if(playerControlHandler.changePlayerSlot(args[1], Integer.parseInt(args[2]), args[3], Integer.parseInt(args[4]), Integer.parseInt(args[5])))
+                        playerControlHandler.changePlayerSlot(args[1], Integer.parseInt(args[2]), args[3], Integer.parseInt(args[4]), Integer.parseInt(args[5]));
+                    configManager.getPlayerEntity(args[1]).onLivingUpdate();
+
+                } else
+                if(command.toLowerCase().startsWith("slotdel"))
+                {
+                    String[] args = command.split(" ");
+
+                    if(!(args.length == 3))
+                    {
+                        icommandlistener.log("Not enough arguments!");
+                        return;
+                    }
+                    if(playerControlHandler.destroyPlayerSlot(args[1], Integer.parseInt(args[2])))
+                        playerControlHandler.destroyPlayerSlot(args[1], Integer.parseInt(args[2]));
+                } else
 
             if(command.toLowerCase().startsWith("list"))
             {
@@ -1095,4 +1139,5 @@ public class MinecraftServer
 
     public AdvancementManager advancementManager = new AdvancementManager();
     public PlayerStatsManager playerStatsManager = new PlayerStatsManager();
+    public PlayerControlHandler playerControlHandler = new PlayerControlHandler(this);
 }

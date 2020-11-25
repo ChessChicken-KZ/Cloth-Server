@@ -4,12 +4,14 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.src.EntityPlayerMP;
 import net.minecraft.src.ItemStack;
 
+import java.io.File;
+
 /**
  * Extended Player controlling class
  * @author ChessChicken-KZ
  */
 public class PlayerControlHandler {
-    private MinecraftServer minecraftServer;
+    private final MinecraftServer minecraftServer;
 
     public PlayerControlHandler(MinecraftServer server)
     {
@@ -62,7 +64,7 @@ public class PlayerControlHandler {
             toSend[0] = "Inventory of player "+player;
             for(int i = 0; i < 4; i++)
             {
-                toSend[i+1] = divideMassive1(toR.inventory.mainInventory, 1+i);
+                toSend[i+1] = divideMassive(toR.inventory.mainInventory, 1+i);
             }
         }
         else
@@ -74,17 +76,27 @@ public class PlayerControlHandler {
      * Changes the player slot into other ItemStack
      * @param player
      * @param slot
-     * @param newIS
+     * @param idEdit
+     * @param countEdit
+     * @param metaEdit
      * @return
      */
-    public boolean changePlayerSlot(String player, int slot, ItemStack newIS)
+    public boolean changePlayerSlot(String player, int slot, String idEdit, int countEdit, int metaEdit)
     {
         EntityPlayerMP toR = minecraftServer.configManager.getPlayerEntity(player);
 
         if(toR != null)
             if(slot >= 0 && slot <= 35)
             {
-                toR.inventory.mainInventory[slot] = newIS;
+                int j;
+                if(!isNumber(idEdit))
+                {
+                    BlockMappingsManager BlockMappings = new BlockMappingsManager(new File("blocks.mappings"));
+                    FallbackIdMaps fallbackIdMaps = new FallbackIdMaps();
+                    j = BlockMappings.getIdForString(idEdit, fallbackIdMaps.GetIDForNamespacedBlockName(idEdit)); // This is literally the only change between give and giveID
+                }else
+                    j = Integer.parseInt(idEdit);
+                toR.inventory.mainInventory[slot] = new ItemStack(j, countEdit, metaEdit);
                 return true;
             }
 
@@ -121,7 +133,7 @@ public class PlayerControlHandler {
         return 0;
     }
 
-    private String divideMassive1(ItemStack[] itemStacks, int line)
+    private String divideMassive(ItemStack[] itemStacks, int line)
     {
         int q1 = (line * 9);
         int a1 = q1  - 9;
@@ -132,6 +144,18 @@ public class PlayerControlHandler {
             builder.append("   ");
         }
         return builder.toString();
+    }
+
+    private boolean isNumber(String number) {
+        if (number == null)
+            return false;
+
+        try {
+            double d = Double.parseDouble(number);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 
 }

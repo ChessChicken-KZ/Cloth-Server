@@ -1,14 +1,14 @@
 
-!/banned-ips.txt
-!/banned-players.txt
+!/outtest/banned-ips.txt
+!/outtest/banned-players.txt
 !/minecraft_server.iml
-!/world/
+!/outtest/world/
 /out/
 !/server.log.lck
-!/server.log
+!/outtest/server.log
 !/server.properties
-!/server.gamerules
-!/ops.txt
+!/outtest/server.gamerules
+!/outtest/ops.txt
 !/.idea/
 *.class
 /bin/
